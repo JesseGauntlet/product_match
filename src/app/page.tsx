@@ -1,103 +1,189 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import ProductForm from "@/components/product-form";
+import ProductSummary from "@/components/product-summary";
+import SubredditCard from "@/components/subreddit-card";
+
+interface ProductAnalysis {
+  product_summary: string;
+  target_audience: string;
+  problems: string[];
+  subreddits: string[];
+}
+
+interface SubredditData {
+  subreddit: string;
+  description: string;
+  problems: {
+    id: string;
+    title?: string;
+    description: string;
+  }[];
+}
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisStage, setAnalysisStage] = useState<'idle' | 'analyzing' | 'fetching_subreddits' | 'complete'>('idle');
+  const [analysis, setAnalysis] = useState<ProductAnalysis | null>(null);
+  const [subredditData, setSubredditData] = useState<SubredditData[]>([]);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  const handleAnalyzeProduct = async (website: string, description: string) => {
+    setIsAnalyzing(true);
+    setAnalysisStage('analyzing');
+    setAnalysis(null);
+    setSubredditData([]);
+    
+    try {
+      // Step 1: Analyze the product
+      const analysisResponse = await fetch("/api/analyzeProduct", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ website, description }),
+      });
+      
+      const analysisData = await analysisResponse.json();
+      
+      if (!analysisResponse.ok) {
+        throw new Error(analysisData.error || "Failed to analyze product");
+      }
+      
+      setAnalysis(analysisData.analysis);
+      
+      // Step 2: Fetch subreddit data
+      if (analysisData.analysis.subreddits && analysisData.analysis.subreddits.length > 0) {
+        setAnalysisStage('fetching_subreddits');
+        const subredditResponse = await fetch("/api/getSubredditData", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ subreddits: analysisData.analysis.subreddits }),
+        });
+        
+        const subredditResult = await subredditResponse.json();
+        
+        if (!subredditResponse.ok) {
+          throw new Error(subredditResult.error || "Failed to fetch subreddit data");
+        }
+        
+        setSubredditData(subredditResult.data);
+      }
+      
+      setAnalysisStage('complete');
+    } catch (error) {
+      console.error("Error in analysis process:", error);
+      alert("Error analyzing product. Please check that your URL is correct and try again.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleEvaluateProblem = async (
+    problem: { id: string; description: string },
+    productSummary: string
+  ) => {
+    try {
+      const response = await fetch("/api/evaluateProblem", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          problemDescription: problem.description,
+          productSummary,
+        }),
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to evaluate problem");
+      }
+      
+      return result.evaluation;
+    } catch (error) {
+      console.error("Error evaluating problem:", error);
+      throw error;
+    }
+  };
+
+  return (
+    <div className="min-h-screen p-4 md:p-8">
+      <header className="mb-12 text-center">
+        <h1 className="text-4xl font-bold mb-4">Subreddit Discovery & Product Fit</h1>
+        <p className="text-muted-foreground max-w-2xl mx-auto">
+          Find subreddits that align with your product and get recommendations on how to best position your product for each community.
+        </p>
+      </header>
+
+      <div className="max-w-6xl mx-auto">
+        {!analysis ? (
+          <div className="flex flex-col items-center">
+            <ProductForm onSubmit={handleAnalyzeProduct} isLoading={isAnalyzing} />
+            
+            {isAnalyzing && (
+              <div className="mt-8 p-4 bg-muted rounded-md w-full max-w-lg">
+                <h3 className="font-medium mb-2">Analysis in Progress</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center">
+                    <div className={`w-4 h-4 rounded-full mr-2 ${analysisStage === 'analyzing' ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`}></div>
+                    <p className={analysisStage === 'analyzing' ? 'font-medium' : ''}>
+                      {analysisStage === 'analyzing' ? 'Analyzing your product using web search...' : 'Product analysis complete'}
+                    </p>
+                  </div>
+                  
+                  {(analysisStage === 'fetching_subreddits' || analysisStage === 'complete') && (
+                    <div className="flex items-center">
+                      <div className={`w-4 h-4 rounded-full mr-2 ${analysisStage === 'fetching_subreddits' ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`}></div>
+                      <p className={analysisStage === 'fetching_subreddits' ? 'font-medium' : ''}>
+                        {analysisStage === 'fetching_subreddits' ? 'Fetching relevant subreddit data...' : 'Subreddit data retrieved'}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <ProductSummary
+                productSummary={analysis.product_summary}
+                targetAudience={analysis.target_audience}
+                problems={analysis.problems}
+              />
+              
+              <div className="mb-6">
+                <button
+                  onClick={() => {
+                    setAnalysis(null);
+                    setSubredditData([]);
+                    setAnalysisStage('idle');
+                  }}
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  ← Start Over
+                </button>
+              </div>
+            </div>
+            
+            <div>
+              <h2 className="text-2xl font-bold mb-4">Recommended Subreddits</h2>
+              {subredditData.length > 0 ? (
+                subredditData.map((data) => (
+                  <SubredditCard
+                    key={data.subreddit}
+                    subreddit={data.subreddit}
+                    description={data.description}
+                    problems={data.problems}
+                    productSummary={analysis.product_summary}
+                    onEvaluateProblem={handleEvaluateProblem}
+                  />
+                ))
+              ) : (
+                <p className="text-muted-foreground">No subreddit data available.</p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

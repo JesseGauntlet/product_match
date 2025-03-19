@@ -1,36 +1,123 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Subreddit Discovery & Product Fit
+
+A powerful web application that helps product marketers and entrepreneurs discover relevant subreddits for their products and receive tailored messaging recommendations.
+
+## Overview
+
+This application analyzes your product website (and optional description) using OpenAI's advanced AI models with web search capabilities to:
+
+- Generate a comprehensive product summary
+- Identify your target audience
+- List the problems your product aims to solve
+- Recommend relevant subreddits that align with your product
+- Provide tailored messaging recommendations for each community
+
+For each recommended subreddit, the app retrieves additional metadata (including description and common pain points) from Firestore and uses AI to evaluate which subreddit problems are best addressed by your product—with tailored recommendations on how to frame your messaging.
+
+## Features
+
+- **AI-Powered Analysis**: Leverages OpenAI with web search functionality to analyze your product and find the most relevant subreddits
+- **Real-time Progress Updates**: Visual indicators show the analysis progress at each stage
+- **Subreddit Data Integration**: Pulls detailed information about each recommended subreddit from Firestore
+- **Problem-Solution Matching**: Evaluates how well your product addresses specific pain points in each community
+- **Modern, Responsive UI**: Built with Next.js, Tailwind CSS, and shadcn UI for a seamless experience on all devices
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
+Before running the application, you need to set up:
+
+1. An OpenAI API key (with GPT-4 access)
+2. A Firestore database with subreddit data (see Firestore Setup below)
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd product_match
+```
+
+2. Install dependencies:
+```bash
+npm install
+# or
+yarn install
+```
+
+3. Create a `.env.local` file with your API keys:
+```
+OPENAI_API_KEY=your_openai_api_key_here
+
+# Option 1: Use Google Application Credentials (recommended)
+GOOGLE_APPLICATION_CREDENTIALS="../firestore_key.json"
+FIRESTORE_PROJECT_ID="your_project_id"
+
+# Option 2: Or use individual Firebase credentials
+# FIREBASE_PROJECT_ID=your_firebase_project_id
+# FIREBASE_CLIENT_EMAIL=your_firebase_client_email
+# FIREBASE_PRIVATE_KEY=your_firebase_private_key
+```
+
+4. Run the development server:
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5. Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Usage
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Enter your product website URL in the form
+2. Optionally add a product description for more accurate results
+3. Click "Analyze Product"
+4. The system will analyze your product using web search and display:
+   - A summary of your product
+   - Your target audience
+   - Problems your product solves
+   - Recommended subreddits with descriptions
+   - Tailored messaging suggestions for each community
 
-## Learn More
+## Firestore Setup
 
-To learn more about Next.js, take a look at the following resources:
+The application expects a specific Firestore schema:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+subreddits (collection)
+  └── {subreddit_name} (document)
+         ├── description (string)
+         └── problems (subcollection)
+              └── {problem_id} (document)
+                   ├── title (optional string)
+                   └── description (string)
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Technology Stack
 
-## Deploy on Vercel
+- **Frontend**: Next.js, React, TypeScript, Tailwind CSS, shadcn UI
+- **Backend**: Next.js API routes
+- **Database**: Firebase Firestore
+- **AI**: OpenAI API with GPT-4o model and web search capability
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Architecture
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The application follows a simple flow:
+
+1. **Product Analysis**: The application analyzes your product using OpenAI with web search
+2. **Subreddit Discovery**: Based on the analysis, it identifies relevant subreddits
+3. **Data Aggregation**: For each subreddit, it retrieves data from Firestore
+4. **Problem Evaluation**: The app evaluates how well your product addresses each problem
+5. **Results Presentation**: All information is presented in a clean, user-friendly interface
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- This project uses the OpenAI API for AI-powered analysis
+- UI components provided by shadcn UI and styled with Tailwind CSS
+- Built with Next.js and TypeScript for a modern, type-safe application
