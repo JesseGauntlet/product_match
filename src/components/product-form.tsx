@@ -14,6 +14,8 @@ interface ProductFormProps {
 export default function ProductForm({ onSubmit, isLoading }: ProductFormProps) {
   const [website, setWebsite] = useState('');
   const [description, setDescription] = useState('');
+  const [websiteFocused, setWebsiteFocused] = useState(false);
+  const [descriptionFocused, setDescriptionFocused] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,37 +23,89 @@ export default function ProductForm({ onSubmit, isLoading }: ProductFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-lg space-y-6">
+    <form onSubmit={handleSubmit} className="w-full space-y-6">
       <div className="space-y-2">
-        <Label htmlFor="website">Website URL</Label>
-        <Input
-          id="website"
-          type="url"
-          placeholder="https://yourwebsite.com"
-          value={website}
-          onChange={(e) => setWebsite(e.target.value)}
-          required
-        />
-        <p className="text-xs text-muted-foreground">
-          We'll analyze your website and search the web for additional information
-        </p>
+        <div className="relative">
+          <Label 
+            htmlFor="website" 
+            className={`transition-all duration-200 ${
+              websiteFocused || website ? 
+              'text-xs text-blue-600 font-semibold' : 
+              'text-sm text-gray-600'
+            }`}
+          >
+            Website URL
+          </Label>
+          <div className="relative mt-1 rounded-lg shadow-sm">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              </svg>
+            </div>
+            <Input
+              id="website"
+              type="url"
+              placeholder="https://yourwebsite.com"
+              value={website}
+              onChange={(e) => setWebsite(e.target.value)}
+              onFocus={() => setWebsiteFocused(true)}
+              onBlur={() => setWebsiteFocused(false)}
+              className={`pl-10 h-12 transition-all duration-200 ${
+                websiteFocused ? 'border-blue-400 ring-2 ring-blue-100' : ''
+              }`}
+              required
+            />
+          </div>
+          <p className="text-xs text-muted-foreground mt-1.5 ml-1">
+            We'll analyze your website and search the web for additional information
+          </p>
+        </div>
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="description">Product Description (Optional)</Label>
-        <Textarea
-          id="description"
-          placeholder="Describe your product or service"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={3}
-        />
-        <p className="text-xs text-muted-foreground">
-          Adding a description can help provide more context about your product
-        </p>
+        <div className="relative">
+          <Label 
+            htmlFor="description" 
+            className={`transition-all duration-200 ${
+              descriptionFocused || description ? 
+              'text-xs text-blue-600 font-semibold' : 
+              'text-sm text-gray-600'
+            }`}
+          >
+            Product Description (Optional)
+          </Label>
+          <div className="relative mt-1 rounded-lg shadow-sm">
+            <div className="absolute left-3 top-3 flex items-center pointer-events-none">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+              </svg>
+            </div>
+            <Textarea
+              id="description"
+              placeholder="Describe your product or service"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              onFocus={() => setDescriptionFocused(true)}
+              onBlur={() => setDescriptionFocused(false)}
+              className={`pl-10 min-h-[100px] transition-all duration-200 ${
+                descriptionFocused ? 'border-blue-400 ring-2 ring-blue-100' : ''
+              }`}
+              rows={3}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground mt-1.5 ml-1">
+            Adding a description can help provide more context about your product
+          </p>
+        </div>
       </div>
       
-      <Button type="submit" disabled={isLoading} className="w-full">
+      <Button 
+        type="submit" 
+        disabled={isLoading} 
+        className={`w-full h-12 font-medium text-base transition-all duration-300 ${
+          isLoading ? 'bg-blue-400' : 'bg-blue-600 hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-200'
+        }`}
+      >
         {isLoading ? (
           <>
             <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -60,11 +114,18 @@ export default function ProductForm({ onSubmit, isLoading }: ProductFormProps) {
             </svg>
             Analyzing with web search...
           </>
-        ) : 'Analyze Product'}
+        ) : (
+          <>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            Analyze Product
+          </>
+        )}
       </Button>
       
       {isLoading && (
-        <div className="text-sm text-center text-muted-foreground">
+        <div className="text-sm text-center text-muted-foreground animate-pulse">
           This process may take a minute or two as we search the web for information about your product
         </div>
       )}

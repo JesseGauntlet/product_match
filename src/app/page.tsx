@@ -106,33 +106,37 @@ export default function Home() {
 
   return (
     <div className="min-h-screen p-4 md:p-8">
-      <header className="mb-12 text-center">
-        <h1 className="text-4xl font-bold mb-4">Subreddit Discovery & Product Fit</h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
+      <header className="mb-12 text-center animate-slide-down">
+        <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600">
+          Subreddit Discovery & Product Fit
+        </h1>
+        <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
           Find subreddits that align with your product and get recommendations on how to best position your product for each community.
         </p>
       </header>
 
       <div className="max-w-6xl mx-auto">
         {!analysis ? (
-          <div className="flex flex-col items-center">
-            <ProductForm onSubmit={handleAnalyzeProduct} isLoading={isAnalyzing} />
+          <div className="flex flex-col items-center animate-fade-in">
+            <div className="w-full max-w-lg bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 border border-gray-100 hover-lift transition-all-smooth">
+              <ProductForm onSubmit={handleAnalyzeProduct} isLoading={isAnalyzing} />
+            </div>
             
             {isAnalyzing && (
-              <div className="mt-8 p-4 bg-muted rounded-md w-full max-w-lg">
-                <h3 className="font-medium mb-2">Analysis in Progress</h3>
-                <div className="space-y-2">
-                  <div className="flex items-center">
-                    <div className={`w-4 h-4 rounded-full mr-2 ${analysisStage === 'analyzing' ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`}></div>
-                    <p className={analysisStage === 'analyzing' ? 'font-medium' : ''}>
+              <div className="mt-8 p-6 bg-white/80 backdrop-blur-sm rounded-2xl shadow-lg w-full max-w-lg border border-gray-100 animate-slide-up">
+                <h3 className="font-semibold mb-4 text-lg">Analysis in Progress</h3>
+                <div className="space-y-4">
+                  <div className="flex items-center p-3 rounded-lg transition-all-smooth">
+                    <div className={`w-5 h-5 rounded-full mr-3 ${analysisStage === 'analyzing' ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`}></div>
+                    <p className={`${analysisStage === 'analyzing' ? 'font-medium text-blue-800' : 'text-green-800'}`}>
                       {analysisStage === 'analyzing' ? 'Analyzing your product using web search...' : 'Product analysis complete'}
                     </p>
                   </div>
                   
                   {(analysisStage === 'fetching_subreddits' || analysisStage === 'complete') && (
-                    <div className="flex items-center">
-                      <div className={`w-4 h-4 rounded-full mr-2 ${analysisStage === 'fetching_subreddits' ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`}></div>
-                      <p className={analysisStage === 'fetching_subreddits' ? 'font-medium' : ''}>
+                    <div className="flex items-center p-3 rounded-lg transition-all-smooth">
+                      <div className={`w-5 h-5 rounded-full mr-3 ${analysisStage === 'fetching_subreddits' ? 'bg-blue-500 animate-pulse' : 'bg-green-500'}`}></div>
+                      <p className={`${analysisStage === 'fetching_subreddits' ? 'font-medium text-blue-800' : 'text-green-800'}`}>
                         {analysisStage === 'fetching_subreddits' ? 'Fetching relevant subreddit data...' : 'Subreddit data retrieved'}
                       </p>
                     </div>
@@ -142,8 +146,8 @@ export default function Home() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="animate-slide-in-left">
               <ProductSummary
                 productSummary={analysis.product_summary}
                 targetAudience={analysis.target_audience}
@@ -151,35 +155,43 @@ export default function Home() {
                 subreddits={analysis.subreddits}
               />
               
-              <div className="mb-6">
+              <div className="mb-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>
                 <button
                   onClick={() => {
                     setAnalysis(null);
                     setSubredditData([]);
                     setAnalysisStage('idle');
                   }}
-                  className="text-sm text-blue-600 hover:underline"
+                  className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center transition-all duration-200"
                 >
-                  ← Start Over
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                  </svg>
+                  Start Over
                 </button>
               </div>
             </div>
             
-            <div>
-              <h2 className="text-2xl font-bold mb-4">Recommended Subreddits</h2>
+            <div className="animate-slide-in-right">
+              <h2 className="text-2xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600">Recommended Subreddits</h2>
               {subredditData.length > 0 ? (
-                subredditData.map((data) => (
-                  <SubredditCard
-                    key={data.subreddit}
-                    subreddit={data.subreddit}
-                    description={data.description}
-                    problems={data.problems}
-                    productSummary={analysis.product_summary}
-                    onEvaluateProblem={handleEvaluateProblem}
-                  />
-                ))
+                <div className="space-y-4">
+                  {subredditData.map((data, index) => (
+                    <div key={data.subreddit} className="animate-fade-in" style={{ animationDelay: `${0.2 * (index + 1)}s` }}>
+                      <SubredditCard
+                        subreddit={data.subreddit}
+                        description={data.description}
+                        problems={data.problems}
+                        productSummary={analysis.product_summary}
+                        onEvaluateProblem={handleEvaluateProblem}
+                      />
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <p className="text-muted-foreground">No subreddit data available.</p>
+                <div className="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-lg border border-gray-100 text-center animate-pulse-subtle">
+                  <p className="text-muted-foreground text-lg">Loading subreddit data...</p>
+                </div>
               )}
             </div>
           </div>
