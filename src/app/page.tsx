@@ -148,6 +148,7 @@ export default function Home() {
                 productSummary={analysis.product_summary}
                 targetAudience={analysis.target_audience}
                 problems={analysis.problems}
+                subreddits={analysis.subreddits}
               />
               
               <div className="mb-6">

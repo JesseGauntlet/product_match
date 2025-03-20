@@ -1,23 +1,24 @@
-import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
+// npx ts-node src/test_websearch.ts
+import OpenAI from "openai";
+import dotenv from "dotenv";
 
-if (!process.env.OPENAI_API_KEY) {
-  console.error('OPENAI_API_KEY not found in environment');
-}
+// Load environment variables
+dotenv.config();
 
+// Initialize OpenAI with your API key
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY // Make sure this is in your .env file
 });
+// const website = "https://cubingapp.com"
+const description = ""
+const website = "https://www.gauntletai.com";
+// const description = "Gauntlet is an intensive bootcamp for software engineers, with guaranteed job placement on graduation.";
+// const website = "https://www.missouriquiltco.com/"
+// const description = ""
 
-export async function POST(req: Request) {
+
+async function main() {
   try {
-    const body = await req.json();
-    const { website, description } = body;
-
-    if (!website) {
-      return NextResponse.json({ error: 'Website is required' }, { status: 400 });
-    }
-
     const response = await openai.responses.create({
       model: "gpt-4o",
       input: `Analyze the product with website ${website} and description: ${description}
@@ -41,7 +42,7 @@ Search the web for information about this product and its features, e.g. site:${
                 type: "string",
                 description: "The target audience for this product"
               },
-              problems: {
+              problems_solved: {
                 type: "array",
                 items: {
                   type: "string"
@@ -53,10 +54,10 @@ Search the web for information about this product and its features, e.g. site:${
                 items: {
                   type: "string",
                 },
-                description: "List of relevant subreddits (without r/ prefix), ordered by relevance"
+                description: "List of relevant subreddits (without r/ prefix), where people might discuss problems that this product solves"
               }
             },
-            required: ["product_summary", "target_audience", "problems", "subreddits"],
+            required: ["product_summary", "target_audience", "problems_solved", "subreddits"],
             additionalProperties: false
           },
           strict: true
@@ -64,10 +65,11 @@ Search the web for information about this product and its features, e.g. site:${
       }
     });
 
-    const analysis = JSON.parse(response.output_text);
-    return NextResponse.json({ analysis });
+    console.log(response.output_text);
   } catch (error) {
-    console.error('Error analyzing product:', error);
-    return NextResponse.json({ error: 'Failed to analyze product' }, { status: 500 });
+    console.error('Error:', error);
   }
 }
+
+// Run the script
+main();
