@@ -1,8 +1,14 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-plus-jakarta",
+});
 
 export const metadata: Metadata = {
   title: "Subreddit Finder | Match Your Product with Communities",
@@ -16,13 +22,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="scroll-smooth">
-      <head>
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
-        />
-      </head>
-      <body className={`${inter.variable} font-sans antialiased bg-gradient-to-br from-white via-gray-50 to-sky-50 min-h-screen`}>
+      <body className={`${inter.variable} ${plusJakartaSans.variable} font-sans antialiased bg-gradient-to-br from-white via-gray-50 to-sky-50 min-h-screen`}>
         <div className="relative overflow-hidden">
           {/* Abstract background shapes */}
           <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-blue-100 opacity-20 blur-3xl"></div>

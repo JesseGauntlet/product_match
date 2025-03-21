@@ -1,7 +1,5 @@
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import * as fs from 'fs';
-import * as path from 'path';
 
 if (!getApps().length) {
   // Check if GOOGLE_APPLICATION_CREDENTIALS environment variable exists

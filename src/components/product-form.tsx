@@ -57,7 +57,7 @@ export default function ProductForm({ onSubmit, isLoading }: ProductFormProps) {
             />
           </div>
           <p className="text-xs text-muted-foreground mt-1.5 ml-1">
-            We'll analyze your website and search the web for additional information
+            We&apos;ll analyze your website and search the web for additional information
           </p>
         </div>
       </div>
