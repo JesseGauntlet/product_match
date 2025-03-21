@@ -19,7 +19,11 @@ export default function ProductForm({ onSubmit, isLoading }: ProductFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await onSubmit(website, description);
+    // Ensure the URL has https:// prefix when submitting
+    const fullUrl = website.startsWith('http://') || website.startsWith('https://') 
+      ? website 
+      : `https://${website}`;
+    await onSubmit(fullUrl, description);
   };
 
   return (
@@ -37,21 +41,28 @@ export default function ProductForm({ onSubmit, isLoading }: ProductFormProps) {
             Website URL
           </Label>
           <div className="relative mt-1 rounded-lg shadow-sm">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
               </svg>
             </div>
+            <div className="absolute inset-y-0 left-10 flex items-center pointer-events-none">
+              <span className="text-gray-500 sm:text-sm">https://</span>
+            </div>
             <Input
               id="website"
-              type="url"
-              placeholder="https://yourwebsite.com"
+              type="text"
+              placeholder="yourwebsite.com"
               value={website}
-              onChange={(e) => setWebsite(e.target.value)}
+              onChange={(e) => {
+                // Remove https:// if user tries to paste it
+                const value = e.target.value.replace(/^https?:\/\//, '');
+                setWebsite(value);
+              }}
               onFocus={() => setWebsiteFocused(true)}
               onBlur={() => setWebsiteFocused(false)}
-              className={`pl-10 h-12 transition-all duration-200 ${
-                websiteFocused ? 'border-blue-400 ring-2 ring-blue-100' : ''
+              className={`pl-[105px] h-12 transition-all duration-200 ${
+                websiteFocused ? 'border-orange-400 ring-2 ring-orange-100' : ''
               }`}
               required
             />
