@@ -35,7 +35,7 @@ export default function RootLayout({
           {/* Footer */}
           <footer className="border-t border-gray-100 py-6 mt-12">
             <div className="container mx-auto px-4 text-center text-sm text-gray-500">
-              <p>© {new Date().getFullYear()} Subreddit Discovery & Product Fit. Built with Next.js and OpenAI.</p>
+              <p>© {new Date().getFullYear()} Subreddit Discovery & Product Fit</p>
             </div>
           </footer>
         </div>
