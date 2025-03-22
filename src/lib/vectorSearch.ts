@@ -1,6 +1,13 @@
 import firestore from './firestore';
 import { generateEmbedding } from './embeddings';
-import { CollectionReference } from 'firebase-admin/firestore';
+
+interface SubredditData {
+  description?: string;
+}
+
+interface ProblemData {
+  [key: string]: unknown;
+}
 
 interface SearchResult<T> {
   id: string;
@@ -14,7 +21,7 @@ interface SearchResult<T> {
  * @param limit Maximum number of results to return
  * @returns Array of subreddit search results sorted by similarity
  */
-export async function searchSubreddits(query: string, limit: number = 10): Promise<SearchResult<any>[]> {
+export async function searchSubreddits(query: string, limit: number = 10): Promise<SearchResult<SubredditData>[]> {
   try {
     // Generate embedding for query
     const queryEmbedding = await generateEmbedding(query);
@@ -38,11 +45,11 @@ export async function searchSubreddits(query: string, limit: number = 10): Promi
     }
     
     // Format results
-    const formattedResults: SearchResult<any>[] = [];
+    const formattedResults: SearchResult<SubredditData>[] = [];
     
     results.docs.forEach(doc => {
-      const data = doc.data();
-      const distance = data.vector_distance || 0;
+      const data = doc.data() as SubredditData & { vector_distance?: number };
+      const distance = data.vector_distance ?? 0;
       // Convert cosine distance to similarity score (0-1 range)
       const similarity = 1 - (distance / 2);
       
@@ -66,7 +73,7 @@ export async function searchSubreddits(query: string, limit: number = 10): Promi
  * @param limit Maximum number of results to return
  * @returns Array of problem search results sorted by similarity
  */
-export async function searchProblems(query: string, limit: number = 10): Promise<SearchResult<any>[]> {
+export async function searchProblems(query: string, limit: number = 10): Promise<SearchResult<ProblemData>[]> {
   try {
     // Generate embedding for query
     const queryEmbedding = await generateEmbedding(query);
@@ -90,11 +97,11 @@ export async function searchProblems(query: string, limit: number = 10): Promise
     }
     
     // Format results
-    const formattedResults: SearchResult<any>[] = [];
+    const formattedResults: SearchResult<ProblemData>[] = [];
     
     results.docs.forEach(doc => {
-      const data = doc.data();
-      const distance = data.vector_distance || 0;
+      const data = doc.data() as ProblemData & { vector_distance?: number };
+      const distance = data.vector_distance ?? 0;
       // Convert cosine distance to similarity score (0-1 range)
       const similarity = 1 - (distance / 2);
       

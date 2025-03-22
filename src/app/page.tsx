@@ -185,7 +185,7 @@ export default function Home() {
                     Intelligent Matching
                   </dt>
                   <dd className="mt-2 text-base leading-7 text-gray-600">
-                    Advanced algorithms analyze your product's features and match them with the most relevant subreddit communities.
+                    Advanced algorithms analyze your product&apos;s features and match them with the most relevant subreddit communities.
                   </dd>
                 </div>
                 <div className="relative pl-16">
