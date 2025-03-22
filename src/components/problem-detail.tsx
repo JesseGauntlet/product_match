@@ -9,6 +9,7 @@ interface ProblemDetailProps {
     description: string;
     evaluation?: {
       relevant: boolean;
+      explanation: string;
       recommendation: string;
     };
   };
@@ -118,6 +119,9 @@ export default function ProblemDetail({ problem, onClose }: ProblemDetailProps) 
                         : 'Your product may not be relevant to this problem'
                       }
                     </h4>
+                    <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+                      {problem.evaluation?.explanation}
+                    </p>
                   </div>
                 </div>
               </div>

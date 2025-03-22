@@ -9,6 +9,7 @@ interface ProblemEvaluation {
   title?: string;
   description: string;
   relevant?: boolean;
+  explanation?: string;
   recommendation?: string;
 }
 
@@ -24,8 +25,9 @@ interface SubredditCardProps {
   onEvaluateProblem: (problem: {
     id: string;
     description: string;
-  }, productSummary: string) => Promise<{
+  }, productSummary: string, subredditDescription: string) => Promise<{
     relevant: boolean;
+    explanation: string;
     recommendation: string;
   }>;
   onProblemSelect?: (problem: {
@@ -35,6 +37,7 @@ interface SubredditCardProps {
     description: string;
     evaluation?: {
       relevant: boolean;
+      explanation: string;
       recommendation: string;
     };
   }) => void;
@@ -45,6 +48,7 @@ interface SubredditCardProps {
     description: string;
     evaluation?: {
       relevant: boolean;
+      explanation: string;
       recommendation: string;
     };
   };
@@ -75,6 +79,7 @@ export default function SubredditCard({
           description: problem.description,
           evaluation: {
             relevant: evaluations[problem.id].relevant!,
+            explanation: evaluations[problem.id].explanation!,
             recommendation: evaluations[problem.id].recommendation!
           }
         });
@@ -84,10 +89,11 @@ export default function SubredditCard({
     
     setEvaluatingId(problem.id);
     try {
-      const result = await onEvaluateProblem(problem, productSummary);
+      const result = await onEvaluateProblem(problem, productSummary, description);
       const updatedEvaluation = {
         ...problem,
         relevant: result.relevant,
+        explanation: result.explanation,
         recommendation: result.recommendation
       };
       
@@ -97,7 +103,7 @@ export default function SubredditCard({
       }));
       
       // After evaluation, if we have a select handler, call it with the updated evaluation
-      if (onProblemSelect) {
+      if (onProblemSelect && !preventSelect) {
         onProblemSelect({
           id: problem.id,
           subredditName: subreddit,
@@ -105,6 +111,7 @@ export default function SubredditCard({
           description: problem.description,
           evaluation: {
             relevant: result.relevant,
+            explanation: result.explanation,
             recommendation: result.recommendation
           }
         });
@@ -126,6 +133,7 @@ export default function SubredditCard({
         description: problem.description,
         evaluation: {
           relevant: evaluations[problem.id].relevant!,
+          explanation: evaluations[problem.id].explanation!,
           recommendation: evaluations[problem.id].recommendation!
         }
       });
@@ -142,7 +150,7 @@ export default function SubredditCard({
     });
     
     // Start the evaluation in the background
-    handleEvaluate(problem, false); // Changed to false to allow updating the detail view
+    handleEvaluate(problem, false);
   };
 
   return compact ? (

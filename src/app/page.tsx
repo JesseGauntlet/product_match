@@ -30,6 +30,7 @@ interface SelectedProblem {
   description: string;
   evaluation?: {
     relevant: boolean;
+    explanation: string;
     recommendation: string;
   };
 }
@@ -93,7 +94,8 @@ export default function Home() {
 
   const handleEvaluateProblem = async (
     problem: { id: string; description: string },
-    productSummary: string
+    productSummary: string,
+    subredditDescription: string
   ) => {
     try {
       const response = await fetch("/api/evaluateProblem", {
@@ -102,6 +104,7 @@ export default function Home() {
         body: JSON.stringify({
           problemDescription: problem.description,
           productSummary,
+          subredditDescription
         }),
       });
       
