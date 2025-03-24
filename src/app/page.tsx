@@ -5,6 +5,8 @@ import ProductForm from "@/components/product-form";
 import ProductSummary from "@/components/product-summary";
 import SubredditCard from "@/components/subreddit-card";
 import ProblemDetail from "@/components/problem-detail";
+import ProblemSearchForm from "@/components/problem-search-form";
+import ProblemSearchResults from "@/components/problem-search-results";
 
 interface ProductAnalysis {
   product_summary: string;
@@ -35,12 +37,24 @@ interface SelectedProblem {
   };
 }
 
+interface ProblemSearchResult {
+  id: string;
+  similarity: number;
+  subreddit: string;
+  title: string;
+  description: string;
+}
+
+type SearchMode = 'product' | 'problem';
+
 export default function Home() {
+  const [searchMode, setSearchMode] = useState<SearchMode>('product');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisStage, setAnalysisStage] = useState<'idle' | 'analyzing' | 'fetching_subreddits' | 'complete'>('idle');
   const [analysis, setAnalysis] = useState<ProductAnalysis | null>(null);
   const [subredditData, setSubredditData] = useState<SubredditData[]>([]);
   const [selectedProblem, setSelectedProblem] = useState<SelectedProblem | null>(null);
+  const [problemSearchResults, setProblemSearchResults] = useState<ProblemSearchResult[]>([]);
 
   const handleAnalyzeProduct = async (website: string, description: string) => {
     setIsAnalyzing(true);
@@ -129,6 +143,32 @@ export default function Home() {
     setSelectedProblem(null);
   };
 
+  const handleProblemSearch = async (query: string) => {
+    setIsAnalyzing(true);
+    setProblemSearchResults([]);
+    
+    try {
+      const response = await fetch("/api/searchProblems", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to search problems");
+      }
+      
+      setProblemSearchResults(data.results);
+    } catch (error) {
+      console.error("Error searching problems:", error);
+      alert("Error searching problems. Please try again.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen">
       {!analysis ? (
@@ -146,32 +186,71 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Form Section */}
+            {/* Search Tabs */}
             <div className="mt-12">
-              <div className="backdrop-blur-sm bg-white/30 rounded-2xl border border-gray-100 shadow-2xl shadow-gray-200/20 p-8">
-                <ProductForm onSubmit={handleAnalyzeProduct} isLoading={isAnalyzing} />
-                {isAnalyzing && (
-                  <div className="mt-8 animate-fade-in">
-                    <h3 className="font-semibold mb-4 text-lg">Analysis in Progress</h3>
-                    <div className="space-y-4">
-                      <div className="flex items-center p-3 rounded-lg transition-all-smooth">
-                        <div className={`w-5 h-5 rounded-full mr-3 ${analysisStage === 'analyzing' ? 'bg-orange-500 animate-pulse' : 'bg-green-500'}`}></div>
-                        <p className={`${analysisStage === 'analyzing' ? 'font-medium text-orange-800' : 'text-green-800'}`}>
-                          {analysisStage === 'analyzing' ? 'Analyzing your product using web search...' : 'Product analysis complete'}
-                        </p>
-                      </div>
-                      
-                      {(analysisStage === 'fetching_subreddits' || analysisStage === 'complete') && (
-                        <div className="flex items-center p-3 rounded-lg transition-all-smooth">
-                          <div className={`w-5 h-5 rounded-full mr-3 ${analysisStage === 'fetching_subreddits' ? 'bg-orange-500 animate-pulse' : 'bg-green-500'}`}></div>
-                          <p className={`${analysisStage === 'fetching_subreddits' ? 'font-medium text-orange-800' : 'text-green-800'}`}>
-                            {analysisStage === 'fetching_subreddits' ? 'Fetching relevant subreddit data...' : 'Subreddit data retrieved'}
-                          </p>
+              <div className="backdrop-blur-sm bg-white/30 rounded-2xl border border-gray-100 shadow-2xl shadow-gray-200/20">
+                <div className="border-b border-gray-100">
+                  <div className="flex">
+                    <button
+                      onClick={() => setSearchMode('product')}
+                      className={`flex-1 px-4 py-4 text-sm font-medium text-center ${
+                        searchMode === 'product'
+                          ? 'text-orange-600 border-b-2 border-orange-600'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      Search by Product
+                    </button>
+                    <button
+                      onClick={() => setSearchMode('problem')}
+                      className={`flex-1 px-4 py-4 text-sm font-medium text-center ${
+                        searchMode === 'problem'
+                          ? 'text-orange-600 border-b-2 border-orange-600'
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      Search by Problem
+                    </button>
+                  </div>
+                </div>
+                
+                <div className="p-8">
+                  {searchMode === 'product' ? (
+                    <ProductForm onSubmit={handleAnalyzeProduct} isLoading={isAnalyzing} />
+                  ) : (
+                    <>
+                      <ProblemSearchForm onSubmit={handleProblemSearch} isLoading={isAnalyzing} />
+                      {problemSearchResults.length > 0 && (
+                        <div className="mt-8">
+                          <ProblemSearchResults results={problemSearchResults} />
                         </div>
                       )}
+                    </>
+                  )}
+                  
+                  {searchMode === 'product' && isAnalyzing && (
+                    <div className="mt-8 animate-fade-in">
+                      <h3 className="font-semibold mb-4 text-lg">Analysis in Progress</h3>
+                      <div className="space-y-4">
+                        <div className="flex items-center p-3 rounded-lg transition-all-smooth">
+                          <div className={`w-5 h-5 rounded-full mr-3 ${analysisStage === 'analyzing' ? 'bg-orange-500 animate-pulse' : 'bg-green-500'}`}></div>
+                          <p className={`${analysisStage === 'analyzing' ? 'font-medium text-orange-800' : 'text-green-800'}`}>
+                            {analysisStage === 'analyzing' ? 'Analyzing your product using web search...' : 'Product analysis complete'}
+                          </p>
+                        </div>
+                        
+                        {(analysisStage === 'fetching_subreddits' || analysisStage === 'complete') && (
+                          <div className="flex items-center p-3 rounded-lg transition-all-smooth">
+                            <div className={`w-5 h-5 rounded-full mr-3 ${analysisStage === 'fetching_subreddits' ? 'bg-orange-500 animate-pulse' : 'bg-green-500'}`}></div>
+                            <p className={`${analysisStage === 'fetching_subreddits' ? 'font-medium text-orange-800' : 'text-green-800'}`}>
+                              {analysisStage === 'fetching_subreddits' ? 'Fetching relevant subreddit data...' : 'Subreddit data retrieved'}
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
 
