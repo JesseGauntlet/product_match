@@ -23,11 +23,12 @@ export async function POST(req: Request) {
     const response = await openai.responses.create({
       model: "gpt-4o",
       input: `Analyze the product with website ${website} and description: ${description}
-Search the web for information about this product and its features, e.g. site:${website}`,
+Search the web for information about this product and its features by first visiting the website site:${website}`,
       tools: [{
         type: "web_search_preview",
         search_context_size: "medium",
       }],
+      temperature: 0.1,
       text: {
         format: {
           type: "json_schema",
@@ -37,11 +38,11 @@ Search the web for information about this product and its features, e.g. site:${
             properties: {
               product_summary: {
                 type: "string",
-                description: "A concise summary of the product based on the website and web search results"
+                description: "A concise 5 sentence summary of the product based on the website and web search results"
               },
               target_audience: {
                 type: "string",
-                description: "The target audience for this product"
+                description: "2 sentence summary of the target audience for this product"
               },
               problems: {
                 type: "array",

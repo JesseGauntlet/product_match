@@ -153,6 +153,15 @@ export default function SubredditCard({
     handleEvaluate(problem, false);
   };
 
+  const handleAnalyzeAll = async () => {
+    // Analyze all problems that haven't been evaluated yet
+    const unevaluatedProblems = problems.filter(problem => !evaluations[problem.id]);
+    
+    for (const problem of unevaluatedProblems) {
+      await handleEvaluate(problem, true);
+    }
+  };
+
   return compact ? (
     // Compact version for when a problem is selected and cards are shown on the left
     <Card className="mb-3 overflow-hidden border border-gray-100 hover-lift bg-white/80 backdrop-blur-sm">
@@ -173,6 +182,14 @@ export default function SubredditCard({
               r/{subreddit}
             </a>
           </h3>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-xs bg-white border border-gray-200 shadow-sm hover:bg-orange-50"
+            onClick={handleAnalyzeAll}
+          >
+            Analyze All
+          </Button>
         </div>
       </div>
       <div className="p-3">

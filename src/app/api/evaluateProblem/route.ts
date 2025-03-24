@@ -39,7 +39,8 @@ Important: Be discerning and only mark as relevant if there's a strong, direct c
         role: "user",
         content: prompt
       }],
-      response_format: { type: "json_object" }
+      response_format: { type: "json_object" },
+      temperature: 0.1
     });
 
     const result = response.choices[0].message.content;
